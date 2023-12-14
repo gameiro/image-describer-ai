@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Define command to run the application
-CMD ["python", "images_ai_blog_generator.py"]
+CMD ["python", "server.py"]
