@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # Define command to run the application
-CMD ["python", "server.py"]
+CMD [ "python", "-m" , "flask", "run", "--host=0.0.0.0","--port=8080"]
