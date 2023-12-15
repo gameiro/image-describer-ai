@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
 # Set the working directory in the container
 WORKDIR /app
 
+# Create a temporary folder named 'temp' inside the container
+RUN mkdir temp
+
 # Copy the current directory contents into the container at /app
 COPY . /app
 
