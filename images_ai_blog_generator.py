@@ -26,7 +26,7 @@ GCP_DRIVE_FETCH_PAGE_SIZE = os.getenv('GCP_DRIVE_FETCH_PAGE_SIZE', 100)
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 # Path to your service account key JSON file
-service_account_file = '/secrets/client_secrets.json'
+service_account_file = './secrets/client_secrets.json'
 
 # Define the required scopes for the Drive API
 SCOPES = ['https://www.googleapis.com/auth/drive']
