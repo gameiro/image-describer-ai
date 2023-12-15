@@ -43,7 +43,7 @@ drive_service = build('drive', 'v3', credentials=credentials)
 
 # Function to check if converted image exists in the ./temp folder
 def check_existing_image(file_name):
-    converted_filename = f'.converted.png'
+    converted_filename = f'./temp/converted.png'
     return os.path.exists(converted_filename)
 
 # Function to download image content
@@ -54,8 +54,8 @@ def download_image(drive_service, file_id):
 
 # Function to convert HEIC image to PNG
 def convert_heic_to_png(image_content, file_name):
-    temp_filename = f'temp.heic'
-    converted_filename = f'.converted.png'
+    temp_filename = f'.temp/temp.heic'
+    converted_filename = f'./temp/converted.png'
     
     with open(temp_filename, 'wb') as temp_file:
         temp_file.write(image_content)
@@ -121,7 +121,7 @@ def process_images(files):
                 
                 if check_existing_image(file_name):
                     # Skip downloading and conversion if image already exists
-                    converted_filename = f'converted.png'
+                    converted_filename = f'./temp/converted.png'
                 else:
                     image_content = download_image(drive_service, file_id)
                     converted_filename = convert_heic_to_png(image_content, file_name)
