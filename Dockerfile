@@ -10,6 +10,9 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install image converter
+RUN pip install heic2png
+
 # Expose the port on which your Flask app runs
 EXPOSE 8080
 
