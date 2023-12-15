@@ -10,6 +10,7 @@ from googleapiclient.discovery import build
 import vertexai
 from vertexai.vision_models import ImageTextModel, Image
 from vertexai.language_models import TextGenerationModel
+from heic2png import HEIC2PNG
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -59,8 +60,10 @@ def convert_heic_to_png(image_content, file_name):
     with open(temp_filename, 'wb') as temp_file:
         temp_file.write(image_content)
 
-    conversion_command = ['HEIC2PNG', '-i', temp_filename, '-o', converted_filename, '-w']
-    subprocess.run(conversion_command)
+    heic_img = HEIC2PNG(temp_filename, quality=90, overwrite=True)  # Specify the quality of the converted image
+    converted_filename = heic_img.save()
+    #conversion_command = ['HEIC2PNG', '-i', temp_filename, '-o', converted_filename, '-w']
+    #subprocess.run(conversion_command)
 
     return converted_filename
 
