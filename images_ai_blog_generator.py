@@ -21,12 +21,13 @@ LOCATION = os.getenv('GCP_LOCATION', 'us-central1')
 # ID of the folder in Google Drive containing the images
 GCP_DRIVE_FOLDER_ID = os.getenv('GCP_DRIVE_FOLDER_ID')
 GCP_DRIVE_FETCH_PAGE_SIZE = os.getenv('GCP_DRIVE_FETCH_PAGE_SIZE', 100)
+MARKDOWN_FILE_PATH = 'blog_post_summary.md'
 
 # Initialize Vertex AI
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 # Path to your service account key JSON file
-service_account_file = './secrets/client_secrets.json'
+service_account_file = '/secrets/client_secrets.json'
 
 # Define the required scopes for the Drive API
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -41,7 +42,7 @@ drive_service = build('drive', 'v3', credentials=credentials)
 
 # Function to check if converted image exists in the ./temp folder
 def check_existing_image(file_name):
-    converted_filename = f'./temp/converted_{file_name}.png'
+    converted_filename = f'.converted.png'
     return os.path.exists(converted_filename)
 
 # Function to download image content
@@ -52,8 +53,8 @@ def download_image(drive_service, file_id):
 
 # Function to convert HEIC image to PNG
 def convert_heic_to_png(image_content, file_name):
-    temp_filename = f'./temp/temp.heic'
-    converted_filename = f'./temp/converted_{file_name}.png'
+    temp_filename = f'temp.heic'
+    converted_filename = f'.converted.png'
     
     with open(temp_filename, 'wb') as temp_file:
         temp_file.write(image_content)
@@ -117,8 +118,7 @@ def process_images(files):
                 
                 if check_existing_image(file_name):
                     # Skip downloading and conversion if image already exists
-                    # logging.info(f"Image {file_name} already exists in the ./temp folder.")
-                    converted_filename = f'./temp/converted_{file_name}.png'
+                    converted_filename = f'converted.png'
                 else:
                     image_content = download_image(drive_service, file_id)
                     converted_filename = convert_heic_to_png(image_content, file_name)
@@ -222,3 +222,13 @@ else:
         summary_file.write(blog_post_summary)
 
     print(f"Markdown file with blog post summary created: {summary_markdown_filename}")
+    
+    # Upload the Markdown file to Google Drive
+    file_metadata = {
+        'name': 'blog_post_summary.md',  # Replace with the desired name for the file in Drive
+        'parents': [GCP_DRIVE_FOLDER_ID]
+    }
+    media = {'mimeType': 'text/markdown', 'body': open(MARKDOWN_FILE_PATH, 'rb')}
+    uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    
+    print(f'File ID of the uploaded Markdown file: {uploaded_file.get("id")}')
