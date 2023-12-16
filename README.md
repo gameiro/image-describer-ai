@@ -51,6 +51,43 @@ The script performs the following actions:
 2. Set up the `client_secrets.json` file.
 3. Update environment variables or use default values in the script.
 
+## Deployment to Google Cloud Run
+
+To automatically deploy this Python script as a containerized application on Google Cloud Run directly from your GitHub repository, follow these steps:
+
+1. **Prepare your GitHub repository:**
+
+   Ensure your GitHub repository contains the necessary files:
+   - Dockerfile: Configured to build your Python script and dependencies into a Docker container.
+   - Required configuration files (if any).
+   - Service account key files (if necessary and handled securely).
+
+2. **Set up Cloud Run and Cloud Build:**
+
+   - Open the Google Cloud Console.
+   - Enable the necessary APIs: Cloud Build, Cloud Run, and Container Registry.
+   - Set up the Cloud Run service manually or through the Cloud Console to configure settings like authentication, memory, CPU, etc.
+   - Configure Cloud Build triggers:
+     - Go to Cloud Build > Triggers.
+     - Click "Connect Repository" and select your GitHub repository.
+     - Configure trigger settings (e.g., branch, tag, trigger type, build configuration file path).
+
+3. **Configure build settings:**
+
+   - Create a cloudbuild.yaml file in your repository to define the build steps.
+   - Include build steps to build the Docker image, push it to Container Registry, and deploy to Cloud Run.
+
+4. **Trigger deployment:**
+
+   - Commit and push changes to your GitHub repository.
+   - Cloud Build automatically detects changes based on the configured trigger and initiates the build and deployment process.
+
+Remember to ensure your script handles secrets and sensitive information securely. Also, verify that your Cloud Run service account has the necessary permissions to interact with Google Drive, Vertex AI, and other required GCP services.
+
+This process involves setting up continuous deployment with Cloud Build triggers, which automatically builds and deploys changes from your GitHub repository to Cloud Run.
+
+For more detailed instructions or troubleshooting, refer to the Cloud Run and Cloud Build documentation.
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
