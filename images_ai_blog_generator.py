@@ -24,9 +24,6 @@ GCP_DRIVE_FOLDER_ID = os.getenv('GCP_DRIVE_FOLDER_ID')
 GCP_DRIVE_FETCH_PAGE_SIZE = os.getenv('GCP_DRIVE_FETCH_PAGE_SIZE', 100)
 MARKDOWN_FILE_PATH = 'blog_post_summary.md'
 
-# Initialize Vertex AI
-vertexai.init(project=PROJECT_ID, location=LOCATION)
-
 # Path to your service account key JSON file
 service_account_file = '/secrets/client_secrets.json'
 
@@ -41,10 +38,8 @@ credentials = service_account.Credentials.from_service_account_file(
 # Build the Drive service using the created credentials
 drive_service = build('drive', 'v3', credentials=credentials)
 
-# Function to check if converted image exists in the ./temp folder
-def check_existing_image(file_name):
-    converted_filename = f'/app/temp/converted.png'
-    return os.path.exists(converted_filename)
+# Initialize Vertex AI
+vertexai.init(project=PROJECT_ID, location=LOCATION)
 
 # Function to download image content
 def download_image(drive_service, file_id):
@@ -53,20 +48,17 @@ def download_image(drive_service, file_id):
     return image_content if image_content else None
 
 # Function to convert HEIC image to PNG
-def convert_heic_to_png(image_content, file_name):
-    temp_filename = f'/app/temp/temp.heic'
-    converted_filename = f'/app/temp/converted.png'
+def convert_heic_to_png(image_content):
+    temp_filename = f'./temp/temp.heic'
+    converted_filename = f'./temp/converted.png'
     
     with open(temp_filename, 'wb') as temp_file:
         temp_file.write(image_content)
 
-    heic_converter = heic2png.HEICConvert(temp_filename, output_dir='/app/temp', quality=90)
-    converted_files = heic_converter.convert_all(overwrite=True)  # Setting overwrite to True
-    
-    if converted_files:
-        return converted_files[0]  # Return the first converted file
-    else:
-        return None
+    conversion_command = ['heic2png', '-i', temp_filename, '-o', converted_filename, '-w']
+    subprocess.run(conversion_command)
+
+    return converted_filename
 
 # Function to process captions asynchronously
 def process_captions_async(captions_list):
@@ -120,13 +112,12 @@ def process_images(files):
                 file_name = file['name']
                 converted_filename = ""
                 
-                if check_existing_image(file_name):
-                    # Skip downloading and conversion if image already exists
-                    converted_filename = f'/app/temp/converted.png'
-                else:
-                    image_content = download_image(drive_service, file_id)
-                    converted_filename = convert_heic_to_png(image_content, file_name)
-            
+                image_content = download_image(drive_service, file_id)
+
+                logging.info(f"Converting Image file: {file_name}")
+
+                converted_filename = convert_heic_to_png(image_content)
+        
                 if converted_filename:
                     caption_future = executor.submit(process_image_caption_async, converted_filename)
                     caption_futures.append(caption_future)
