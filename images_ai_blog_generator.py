@@ -60,12 +60,13 @@ def convert_heic_to_png(image_content, file_name):
     with open(temp_filename, 'wb') as temp_file:
         temp_file.write(image_content)
 
-    heic_img = HEIC2PNG(temp_filename, quality=90, overwrite=True)  # Specify the quality of the converted image
-    converted_filename = heic_img.save()
-    #conversion_command = ['HEIC2PNG', '-i', temp_filename, '-o', converted_filename, '-w']
-    #subprocess.run(conversion_command)
-
-    return converted_filename
+    heic_converter = heic2png.HEICConvert(temp_filename, output_dir='/app/temp', quality=90)
+    converted_files = heic_converter.convert_all(overwrite=True)  # Setting overwrite to True
+    
+    if converted_files:
+        return converted_files[0]  # Return the first converted file
+    else:
+        return None
 
 # Function to process captions asynchronously
 def process_captions_async(captions_list):
