@@ -3,3 +3,4 @@ google-api-python-client
 google-cloud-aiplatform
 Flask
 heic2png
+flask_socketio
