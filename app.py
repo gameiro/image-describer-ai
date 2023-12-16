@@ -1,44 +1,42 @@
-from flask import Flask, jsonify
-import subprocess
+from flask import Flask, jsonify, Response
+import logging
 import os
-import threading
+import subprocess
+import concurrent.futures
 from queue import Queue, Empty
 import sys
 
 app = Flask(__name__)
 
-job_status = "Not Running"
-output_queue = Queue()
+# Initialize logging to capture subprocess logs
+logging.basicConfig(level=logging.INFO)
+log_queue = Queue()
 
+# Function to execute subprocess and capture logs
 def execute_job():
-    global job_status
-    job_status = "Running"
     try:
         process = subprocess.Popen(['python', 'images_ai_blog_generator.py'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
-        for stdout_line in iter(process.stdout.readline, ''):
-            output_queue.put(stdout_line.strip())
-
-        process.stdout.close()
-
-        for stderr_line in iter(process.stderr.readline, ''):
-            output_queue.put(stderr_line.strip())
-
-        process.stderr.close()
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                log_queue.put(output.strip())
 
         return_code = process.wait()
 
         if return_code == 0:
-            job_status = "Job completed successfully!"
+            log_queue.put("Job completed successfully!")
         else:
-            job_status = f"Error: Unable to complete the job (Return code: {return_code})"
+            log_queue.put(f"Error: Unable to complete the job (Return code: {return_code})")
     except Exception as e:
-        job_status = f"Error: {str(e)}"
+        log_queue.put(f"Error: {str(e)}")
 
+# Route to trigger job execution
 @app.route('/')
 def trigger_job():
     global job_thread
-    global job_status
     if 'job_thread' in globals() and job_thread.is_alive():
         return 'Job is already running!'
 
@@ -46,20 +44,17 @@ def trigger_job():
     job_thread.start()
     return 'Job triggered successfully!'
 
-@app.route('/status')
-def job_status_route():
-    return job_status
-
+# Route to retrieve and display logs
 @app.route('/logs')
 def get_logs():
     logs = []
     while True:
         try:
-            log_line = output_queue.get_nowait()
+            log_line = log_queue.get_nowait()
             logs.append(log_line)
         except Empty:
             break
-    return jsonify(logs)
+    return Response('\n'.join(logs), mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
