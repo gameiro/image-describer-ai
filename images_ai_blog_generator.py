@@ -11,6 +11,7 @@ import vertexai
 from vertexai.vision_models import ImageTextModel, Image
 from vertexai.language_models import TextGenerationModel
 from heic2png import HEIC2PNG
+from googleapiclient.http import MediaFileUpload
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -223,7 +224,11 @@ else:
         'name': 'blog_post_summary.md',  # Replace with the desired name for the file in Drive
         'parents': [GCP_DRIVE_FOLDER_ID]
     }
-    media = {'mimeType': 'text/markdown', 'body': open(MARKDOWN_FILE_PATH, 'rb')}
+    media = MediaFileUpload(
+        MARKDOWN_FILE_PATH,
+        mimetype='text/markdown',
+        resumable=True
+    )
     uploaded_file = drive_service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    
+
     print(f'File ID of the uploaded Markdown file: {uploaded_file.get("id")}')
