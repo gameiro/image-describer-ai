@@ -5,7 +5,7 @@
     <title>Job Logs</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script type="text/javascript" charset="utf-8">
-        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        var socket = io.connect('wss://' + document.domain + ':' + location.port);
 
         socket.on('log', function(msg) {
             console.log(msg.data);
